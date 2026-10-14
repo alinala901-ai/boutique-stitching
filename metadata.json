@@ -1,0 +1,7 @@
+{
+  "name": "Boutique Stitching",
+  "description": "Boutique Stitching in Sadiqabad offering ladies and kids custom stitching, Pakistani suits, bridal wear, party wear, custom designs and alterations.",
+  "requestFramePermissions": [],
+  "majorCapabilities": ["MAJOR_CAPABILITY_SERVER_SIDE_GEMINI_API"]
+}
+

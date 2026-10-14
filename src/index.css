@@ -1,0 +1,64 @@
+@import "tailwindcss";
+
+@theme {
+  --color-royal-blue: #2455C4;
+  --color-deep-royal: #173B8F;
+  --color-light-blue: #F2F6FF;
+  --color-blue-border: #D9E4FF;
+  --color-gold-accent: #D4AF37;
+  --color-main-text: #202A3B;
+}
+
+@layer base {
+  :root {
+    --font-serif: 'Playfair Display', Georgia, serif;
+    --font-sans: 'Plus Jakarta Sans', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+    --font-urdu: 'Noto Nastaliq Urdu', 'Amiri', serif;
+  }
+
+  html {
+    scroll-behavior: smooth;
+    font-family: var(--font-sans);
+  }
+
+  /* When document is RTL or urdu */
+  [dir="rtl"] {
+    font-family: var(--font-urdu), var(--font-sans);
+  }
+
+  [dir="rtl"] .font-serif,
+  [dir="rtl"] .font-serif-display {
+    font-family: var(--font-urdu), var(--font-serif);
+    line-height: 1.8;
+  }
+
+  [dir="rtl"] body {
+    line-height: 1.9;
+  }
+}
+
+.font-serif-display {
+  font-family: 'Playfair Display', Georgia, serif;
+}
+
+.font-body {
+  font-family: 'Plus Jakarta Sans', -apple-system, BlinkMacSystemFont, sans-serif;
+}
+
+.font-urdu {
+  font-family: 'Noto Nastaliq Urdu', 'Amiri', serif;
+  line-height: 1.9;
+}
+
+/* Theme Utilities for Royal Blue & White Palette */
+.bg-royal-blue { background-color: #2455C4; }
+.bg-deep-royal { background-color: #173B8F; }
+.bg-light-blue { background-color: #F2F6FF; }
+.text-royal-blue { color: #2455C4; }
+.text-deep-royal { color: #173B8F; }
+.text-gold-accent { color: #D4AF37; }
+.text-main-text { color: #202A3B; }
+.border-blue-border { border-color: #D9E4FF; }
+.border-gold-accent { border-color: #D4AF37; }
+
+
