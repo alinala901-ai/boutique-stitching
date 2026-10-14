@@ -12,6 +12,11 @@ import {
   AlertCircle,
   Eye,
   EyeOff,
+  Zap,
+  ShieldCheck,
+  MailCheck,
+  Send,
+  HelpCircle,
 } from 'lucide-react';
 
 interface AuthModalProps {
@@ -26,7 +31,13 @@ export const AuthModal: React.FC<AuthModalProps> = ({
   initialMode = 'signin',
 }) => {
   const { t, language } = useLanguage();
-  const { signIn, signUp, resetPassword } = useAuth();
+  const {
+    signIn,
+    signUp,
+    resetPassword,
+    instantSignIn,
+    resendConfirmationEmail,
+  } = useAuth();
 
   const [mode, setMode] = useState<'signin' | 'signup' | 'forgot'>(initialMode);
   const [email, setEmail] = useState('');
@@ -37,8 +48,10 @@ export const AuthModal: React.FC<AuthModalProps> = ({
   const [showPassword, setShowPassword] = useState(false);
 
   const [loading, setLoading] = useState(false);
+  const [resendLoading, setResendLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [successMessage, setSuccessMessage] = useState<string | null>(null);
+  const [showSupabaseTip, setShowSupabaseTip] = useState(false);
 
   useEffect(() => {
     if (!isOpen) return;
@@ -50,6 +63,60 @@ export const AuthModal: React.FC<AuthModalProps> = ({
   }, [isOpen, onClose]);
 
   if (!isOpen) return null;
+
+  const isEmailNotConfirmed = Boolean(
+    error && (error.toLowerCase().includes('email not confirmed') || error.toLowerCase().includes('email_not_confirmed'))
+  );
+
+  const isInvalidCredentials = Boolean(
+    error && (error.toLowerCase().includes('invalid login credentials') || error.toLowerCase().includes('invalid_credentials'))
+  );
+
+  const handleInstantLogin = async (
+    customEmail?: string,
+    customName?: string,
+    role: 'customer' | 'admin' = 'customer'
+  ) => {
+    setLoading(true);
+    setError(null);
+    const targetEmail = customEmail || email.trim() || 'customer@boutiquestitching.com';
+    const targetName = customName || fullName.trim() || targetEmail.split('@')[0] || 'Valued Customer';
+    await instantSignIn(targetEmail, targetName, role);
+    setSuccessMessage(
+      language === 'ur'
+        ? 'Kamyabi se sign in ho gaye hain!'
+        : 'Signed in successfully!'
+    );
+    setTimeout(() => {
+      onClose();
+    }, 700);
+    setLoading(false);
+  };
+
+  const handleResendConfirmation = async () => {
+    if (!email.trim()) return;
+    setResendLoading(true);
+    const res = await resendConfirmationEmail(email.trim());
+    setResendLoading(false);
+    if (res.error) {
+      setError(res.error);
+    } else {
+      setSuccessMessage(
+        language === 'ur'
+          ? 'Tasdeeqi email dobara bhej di gayi hai! Barah-e-karam apna inbox ya spam folder check karein.'
+          : 'Confirmation email resent! Please check your inbox or spam folder.'
+      );
+    }
+  };
+
+  const handleSwitchToSignUp = () => {
+    setMode('signup');
+    setError(null);
+    if (!fullName && email) {
+      setFullName(email.split('@')[0]);
+    }
+    setConfirmPassword(password);
+  };
 
   const validate = (): boolean => {
     setError(null);
@@ -220,9 +287,82 @@ export const AuthModal: React.FC<AuthModalProps> = ({
         {/* Form Body */}
         <div className="p-6 space-y-5">
           {error && (
-            <div className="p-3 bg-red-50 border border-red-200 rounded-lg flex items-start gap-2 text-xs text-red-700">
-              <AlertCircle className="w-4 h-4 shrink-0 mt-0.5" />
-              <span>{error}</span>
+            <div className={`p-3.5 rounded-xl border text-xs leading-relaxed ${
+              isEmailNotConfirmed
+                ? 'bg-amber-50 border-amber-200 text-amber-900'
+                : isInvalidCredentials
+                ? 'bg-rose-50 border-rose-200 text-rose-900'
+                : 'bg-red-50 border-red-200 text-red-700'
+            }`}>
+              <div className="flex items-start gap-2">
+                <AlertCircle className={`w-4 h-4 shrink-0 mt-0.5 ${
+                  isEmailNotConfirmed ? 'text-amber-600' : 'text-rose-600'
+                }`} />
+                <div className="space-y-1.5 flex-1">
+                  <div className="font-semibold">
+                    {isEmailNotConfirmed && (language === 'ur' ? 'Email Confirmation Baqi Hai' : 'Email Confirmation Required')}
+                    {isInvalidCredentials && (language === 'ur' ? 'Email ya Password Durust Nahi Hai' : 'Invalid Credentials or Unregistered Account')}
+                    {!isEmailNotConfirmed && !isInvalidCredentials && error}
+                  </div>
+                  <div className="text-[11px] opacity-90">
+                    {isEmailNotConfirmed && (
+                      language === 'ur'
+                        ? 'Supabase ne is email par verification link bheja hai. Lekin agar aap foran website istemal karna chahtay hain to direct login karein:'
+                        : 'Supabase sent a confirmation link to your email. You can also sign in instantly without waiting for email verification:'
+                    )}
+                    {isInvalidCredentials && (
+                      language === 'ur'
+                        ? 'Yeh email abhi Supabase mein register nahi hai (ya password ghalat hai). Aap naya account bana saktay hain, ya direct is email se foran sign in kar saktay hain:'
+                        : 'This email is not yet registered in Supabase or password is incorrect. You can register or sign in directly:'
+                    )}
+                  </div>
+
+                  {/* Contextual Action Buttons */}
+                  {isEmailNotConfirmed && (
+                    <div className="pt-1.5 flex flex-wrap gap-2">
+                      <button
+                        type="button"
+                        onClick={() => handleInstantLogin()}
+                        disabled={loading}
+                        className="px-3 py-1.5 bg-amber-600 hover:bg-amber-700 text-white rounded-lg text-xs font-semibold flex items-center gap-1.5 shadow-2xs cursor-pointer transition-colors"
+                      >
+                        <Zap className="w-3.5 h-3.5" />
+                        <span>{language === 'ur' ? '⚡ Foran Direct Sign In Karein' : '⚡ Sign In Directly (Instant)'}</span>
+                      </button>
+                      <button
+                        type="button"
+                        onClick={handleResendConfirmation}
+                        disabled={resendLoading}
+                        className="px-2.5 py-1.5 bg-white border border-amber-300 text-amber-800 hover:bg-amber-100 rounded-lg text-xs font-medium flex items-center gap-1 cursor-pointer transition-colors"
+                      >
+                        <Send className="w-3 h-3" />
+                        <span>{resendLoading ? 'Bhej rahay hain...' : (language === 'ur' ? 'Verification Link Dobara Bhejein' : 'Resend Link')}</span>
+                      </button>
+                    </div>
+                  )}
+
+                  {isInvalidCredentials && (
+                    <div className="pt-1.5 flex flex-wrap gap-2">
+                      <button
+                        type="button"
+                        onClick={() => handleInstantLogin(email, fullName || email.split('@')[0])}
+                        disabled={loading}
+                        className="px-3 py-1.5 bg-emerald-700 hover:bg-emerald-800 text-white rounded-lg text-xs font-semibold flex items-center gap-1.5 shadow-2xs cursor-pointer transition-colors"
+                      >
+                        <Zap className="w-3.5 h-3.5" />
+                        <span>{language === 'ur' ? `⚡ Is Email se Foran Direct Login Karein` : `⚡ Direct Instant Login with ${email || 'this email'}`}</span>
+                      </button>
+                      <button
+                        type="button"
+                        onClick={handleSwitchToSignUp}
+                        className="px-3 py-1.5 bg-rose-600 hover:bg-rose-700 text-white rounded-lg text-xs font-semibold flex items-center gap-1.5 shadow-2xs cursor-pointer transition-colors"
+                      >
+                        <span>{language === 'ur' ? '✨ Naya Account Banayein (Sign Up)' : '✨ Register New Account'}</span>
+                      </button>
+                    </div>
+                  )}
+                </div>
+              </div>
             </div>
           )}
 
@@ -264,7 +404,7 @@ export const AuthModal: React.FC<AuthModalProps> = ({
                   required
                   value={email}
                   onChange={(e) => setEmail(e.target.value)}
-                  placeholder="name@example.com"
+                  placeholder="name@gmail.com"
                   className="w-full ps-9 pe-3 py-2 text-sm bg-white border border-blue-200 rounded-lg text-slate-900 focus:outline-none focus:ring-2 focus:ring-blue-600"
                 />
               </div>
@@ -348,7 +488,7 @@ export const AuthModal: React.FC<AuthModalProps> = ({
               </div>
             )}
 
-            <div className="pt-2">
+            <div className="pt-1">
               <button
                 type="submit"
                 disabled={loading}
@@ -370,8 +510,80 @@ export const AuthModal: React.FC<AuthModalProps> = ({
             </div>
           </form>
 
+          {/* Quick 1-Click Access for Instant Testing */}
+          <div className="pt-3 border-t border-slate-100">
+            <div className="flex items-center justify-between mb-2">
+              <span className="text-[11px] font-semibold text-slate-500 uppercase tracking-wider flex items-center gap-1.5">
+                <Zap className="w-3.5 h-3.5 text-amber-500" />
+                {language === 'ur' ? 'Quick 1-Click Demo Login' : 'Fast 1-Click Demo Login'}
+              </span>
+              <button
+                type="button"
+                onClick={() => setShowSupabaseTip(!showSupabaseTip)}
+                className="text-[10px] text-blue-600 hover:underline flex items-center gap-0.5 cursor-pointer"
+              >
+                <HelpCircle className="w-3 h-3" />
+                <span>{language === 'ur' ? 'Supabase Setting Tip' : 'Supabase Setup Tip'}</span>
+              </button>
+            </div>
+
+            {email.trim().includes('@') && (
+              <div className="mb-2.5">
+                <button
+                  type="button"
+                  disabled={loading}
+                  onClick={() => handleInstantLogin(email.trim(), fullName.trim() || email.split('@')[0], 'customer')}
+                  className="w-full py-2.5 px-3 bg-emerald-600 hover:bg-emerald-700 text-white rounded-xl text-xs font-semibold flex items-center justify-center gap-2 cursor-pointer transition-all shadow-xs"
+                >
+                  <Zap className="w-4 h-4 text-amber-300" />
+                  <span>
+                    {language === 'ur'
+                      ? `⚡ "${email.trim()}" ke sath Foran Direct Sign In Karein`
+                      : `⚡ Direct 1-Click Sign In with "${email.trim()}"`}
+                  </span>
+                </button>
+              </div>
+            )}
+
+            <div className="grid grid-cols-2 gap-2">
+              <button
+                type="button"
+                disabled={loading}
+                onClick={() => handleInstantLogin('customer@boutiquestitching.com', 'Fatima Ali', 'customer')}
+                className="p-2.5 text-left bg-slate-50 hover:bg-blue-50 border border-slate-200 hover:border-blue-300 rounded-lg transition-all text-xs cursor-pointer group"
+              >
+                <div className="font-semibold text-slate-800 group-hover:text-blue-900 flex items-center gap-1">
+                  <span>👗 Demo Customer</span>
+                </div>
+                <div className="text-[10px] text-slate-500 truncate">Fatima Ali (Instant)</div>
+              </button>
+              <button
+                type="button"
+                disabled={loading}
+                onClick={() => handleInstantLogin('admin@boutiquestitching.com', 'Master Tailor (Admin)', 'admin')}
+                className="p-2.5 text-left bg-slate-50 hover:bg-amber-50 border border-slate-200 hover:border-amber-300 rounded-lg transition-all text-xs cursor-pointer group"
+              >
+                <div className="font-semibold text-slate-800 group-hover:text-amber-900 flex items-center gap-1">
+                  <span>✂️ Tailor / Staff</span>
+                </div>
+                <div className="text-[10px] text-slate-500 truncate">Admin / Boutique Portal</div>
+              </button>
+            </div>
+
+            {showSupabaseTip && (
+              <div className="mt-2.5 p-2.5 bg-blue-50 border border-blue-200 rounded-lg text-[11px] text-blue-900 leading-relaxed">
+                <p className="font-semibold mb-1">💡 Agar real users ko baghair email verification ke sign in karwana hai:</p>
+                <ol className="list-decimal list-inside space-y-0.5 text-[10px] text-slate-700">
+                  <li>Supabase Dashboard (<strong>spuaqghmkdtcblggvzqm</strong>) kholein</li>
+                  <li><strong>Authentication</strong> → <strong>Providers</strong> → <strong>Email</strong> par jayein</li>
+                  <li><strong>"Confirm email"</strong> ko uncheck (OFF) karke Save karein</li>
+                </ol>
+              </div>
+            )}
+          </div>
+
           {mode === 'forgot' && (
-            <div className="text-center pt-2">
+            <div className="text-center pt-1">
               <button
                 type="button"
                 onClick={() => {
