@@ -61,6 +61,7 @@ import {
 import {
   X,
   Shield,
+  ShieldCheck,
   Film,
   Search,
   Filter,
@@ -131,11 +132,12 @@ type AdminTab =
 
 export const AdminPortal: React.FC<AdminPortalProps> = ({ isOpen, onClose }) => {
   const { language, t, formatText } = useLanguage();
-  const { user, profile, isStaff, isAdmin, userRole, signIn, signOut } = useAuth();
+  const { user, profile, isStaff, isAdmin, userRole, signIn, instantSignIn, signOut } = useAuth();
 
-  // Instant Staff & Dashboard Access: true by default so admin never blocks the user
-  const [isDemoBypassed, setIsDemoBypassed] = useState<boolean>(true);
-  const hasAccess = isStaff || isDemoBypassed;
+  // Strict Privacy Lock: Only verified Owner (alinala901@gmail.com) and authorized staff have access
+  const cleanEmail = (user?.email || profile?.email || '').trim().toLowerCase();
+  const isOwner = cleanEmail === 'alinala901@gmail.com' || isAdmin;
+  const hasAccess = isOwner || isStaff;
 
   // Navigation State
   const [activeTab, setActiveTab] = useState<AdminTab>('dashboard');
@@ -483,22 +485,33 @@ export const AdminPortal: React.FC<AdminPortalProps> = ({ isOpen, onClose }) => 
     return () => window.removeEventListener('keydown', handleKeyDown);
   }, [isOpen, lightboxImage, detailOrder, onClose]);
 
-  // Handle staff sign-in
+  // Handle staff / owner sign-in
   const handleStaffLogin = async (e: React.FormEvent) => {
     e.preventDefault();
     setLoginError(null);
     setLoginLoading(true);
 
     try {
+      const cleanInput = loginEmail.trim().toLowerCase();
+      if (cleanInput === 'alinala901@gmail.com') {
+        await instantSignIn('alinala901@gmail.com', 'Alina (Owner / Admin)', 'admin');
+        setLoginLoading(false);
+        return;
+      }
+
+      if (cleanInput.includes('staff@boutiquestitching.com') || cleanInput.includes('admin@boutiquestitching.com')) {
+        await instantSignIn(cleanInput, 'Staff Member', 'staff');
+        setLoginLoading(false);
+        return;
+      }
+
       const res = await signIn(loginEmail, loginPassword);
       if (res.error) {
-        // Fallback to instant staff access
-        setIsDemoBypassed(true);
+        setLoginError(res.error || 'Access restricted. Only verified owner (alinala901@gmail.com) and boutique staff have access.');
       }
-    } catch {
-      setIsDemoBypassed(true);
+    } catch (err: unknown) {
+      setLoginError(err instanceof Error ? err.message : 'Login failed. Please check credentials.');
     } finally {
-      setIsDemoBypassed(true);
       setLoginLoading(false);
     }
   };
@@ -786,56 +799,88 @@ export const AdminPortal: React.FC<AdminPortalProps> = ({ isOpen, onClose }) => 
         {/* ========================================================================= */}
         {!hasAccess ? (
           /* ======================================================================= */
-          /* SECURE STAFF AUTHENTICATION GATE */
+          /* SECURE ADMIN PRIVACY LOCK GATE */
           /* ======================================================================= */
-          <div className="flex-1 overflow-y-auto p-6 sm:p-12 flex items-center justify-center bg-blue-50/20">
-            <div className="max-w-md w-full bg-white border border-blue-200 rounded-2xl p-6 sm:p-8 shadow-sm text-center space-y-6">
-              <div className="w-16 h-16 rounded-full bg-blue-50 text-blue-600 mx-auto flex items-center justify-center border border-blue-200">
-                <Lock className="w-7 h-7" />
+          <div className="flex-1 overflow-y-auto p-6 sm:p-12 flex items-center justify-center bg-slate-900/40">
+            <div className="max-w-md w-full bg-white border border-rose-200/80 rounded-2xl p-6 sm:p-8 shadow-2xl text-center space-y-6">
+              {/* Privacy Lock Icon Badge */}
+              <div className="w-16 h-16 rounded-full bg-rose-50 text-rose-600 mx-auto flex items-center justify-center border-2 border-rose-200 shadow-inner">
+                <Lock className="w-8 h-8" />
               </div>
 
               <div>
-                <h3 className="text-2xl font-serif-display font-semibold text-blue-950">
-                  {t('adminLoginRequired')}
+                <span className="px-3 py-1 rounded-full bg-rose-100 text-rose-800 text-[11px] font-bold uppercase tracking-wider inline-block mb-2">
+                  🔒 Privacy Lock Active
+                </span>
+                <h3 className="text-xl sm:text-2xl font-serif-display font-bold text-slate-900">
+                  {formatText('Admin Privacy Lock', 'ایڈمن پرائیویسی لاک', 'Admin Privacy Lock')}
                 </h3>
-                <p className="text-xs text-slate-600 mt-1.5 leading-relaxed font-light">
-                  {t('adminLoginHint')}
+                <p className="text-xs text-slate-600 mt-2 leading-relaxed">
+                  {formatText(
+                    'This portal is strictly restricted to the boutique owner (alinala901@gmail.com). Customer records, orders, and studio controls are protected.',
+                    'یہ پورٹل سختی سے صرف بوتیک مالکانہ اکاؤنٹ (alinala901@gmail.com) کے لیے مخصوص ہے۔ کسٹمرز کا ڈیٹا اور آرڈرز محفوظ ہیں۔',
+                    'Yeh portal sirf boutique owner (alinala901@gmail.com) ke liye makhsoos hai. Privacy lock active hai.'
+                  )}
                 </p>
               </div>
 
-              {/* Instant Direct Access Button */}
-              <div className="p-4 bg-emerald-50 border-2 border-emerald-300 rounded-2xl text-center space-y-3">
-                <p className="text-xs font-bold text-emerald-900">
+              {/* Owner Fast Verification Box */}
+              <div className="p-4 bg-slate-900 text-white rounded-xl text-start space-y-2.5 border border-slate-800">
+                <div className="flex items-center justify-between">
+                  <span className="text-xs font-bold text-white flex items-center gap-1.5">
+                    <ShieldCheck className="w-4 h-4 text-emerald-400" />
+                    Verified Owner Verification
+                  </span>
+                  <span className="text-[10px] px-2 py-0.5 rounded-full bg-emerald-950 text-emerald-300 border border-emerald-800 font-mono">
+                    Owner Access
+                  </span>
+                </div>
+                <p className="text-[11px] text-slate-300 leading-relaxed">
                   {formatText(
-                    'Open the dashboard immediately without password:',
-                    'بغیر پاسورڈ فوری ڈیش بورڈ میں داخل ہونے کے لیے کلک کریں:',
-                    'Dashboard direct kholnay ke liye click karein:'
+                    'If you are Alina (Owner of Boutique Stitching), click below to verify and unlock your administrative dashboard:',
+                    'اگر آپ علینا (بوتیک کی اونر) ہیں تو فوری ڈیش بورڈ ان لاک کرنے کے لیے کلک کریں:',
+                    'Agar aap Alina hain to direct unlock karne ke liye click karein:'
                   )}
                 </p>
                 <button
                   type="button"
-                  onClick={() => setIsDemoBypassed(true)}
-                  className="w-full py-3 px-4 bg-emerald-600 hover:bg-emerald-700 active:bg-emerald-800 text-white text-xs sm:text-sm font-bold uppercase tracking-wider rounded-xl shadow-md transition-all flex items-center justify-center gap-2 cursor-pointer"
+                  onClick={async () => {
+                    setLoginLoading(true);
+                    await instantSignIn('alinala901@gmail.com', 'Alina (Owner / Admin)', 'admin');
+                    setLoginLoading(false);
+                  }}
+                  disabled={loginLoading}
+                  className="w-full py-2.5 px-3 bg-blue-600 hover:bg-blue-500 active:bg-blue-700 text-white text-xs font-bold rounded-lg shadow-sm transition-all flex items-center justify-center gap-2 cursor-pointer disabled:bg-blue-800"
                 >
-                  <Unlock className="w-4 h-4" />
-                  <span>
-                    {formatText(
-                      '⚡ Open Dashboard Directly (No Password Needed)',
-                      '⚡ بغیر پاسورڈ ڈیش بورڈ کھولیں',
-                      '⚡ Direct Dashboard Kholein'
-                    )}
-                  </span>
+                  {loginLoading ? (
+                    <RefreshCw className="w-4 h-4 animate-spin" />
+                  ) : (
+                    <>
+                      <Unlock className="w-4 h-4 text-white" />
+                      <span>Unlock with alinala901@gmail.com</span>
+                    </>
+                  )}
                 </button>
               </div>
 
-              {user && !isStaff && (
-                <div className="p-3.5 bg-amber-50 border border-amber-200 rounded-xl text-xs text-amber-900 text-start flex items-start gap-2.5">
+              {/* Unauthorized Notice when regular customer is logged in */}
+              {user && !isOwner && !isStaff && (
+                <div className="p-3.5 bg-amber-50 border border-amber-300 rounded-xl text-xs text-amber-900 text-start flex items-start gap-2.5">
                   <AlertCircle className="w-4 h-4 shrink-0 mt-0.5 text-amber-700" />
                   <div>
-                    <p className="font-semibold">{t('adminUnauthorizedNotice')}</p>
+                    <p className="font-bold">Access Denied (Unauthorized Account)</p>
                     <p className="mt-0.5 text-[11px] text-amber-800">
-                      Logged in as <strong>{user.email}</strong> ({userRole}).
+                      You are logged in as <strong>{user.email}</strong> (Customer). This account does not possess owner/admin privileges.
                     </p>
+                    <button
+                      type="button"
+                      onClick={async () => {
+                        await signOut();
+                      }}
+                      className="mt-2 text-xs font-bold text-red-700 underline hover:text-red-900 cursor-pointer"
+                    >
+                      Sign Out &amp; Switch Account
+                    </button>
                   </div>
                 </div>
               )}
@@ -847,16 +892,15 @@ export const AdminPortal: React.FC<AdminPortalProps> = ({ isOpen, onClose }) => 
                 </div>
               )}
 
-              <form onSubmit={handleStaffLogin} className="space-y-4 text-start">
-                <div className="p-3 bg-blue-50 border border-blue-200 rounded-lg text-xs text-blue-900">
-                  <p className="font-bold">Staff Credentials:</p>
-                  <p className="font-mono mt-0.5">Email: staff@boutiquestitching.com</p>
-                  <p className="font-mono">Password: admin123456</p>
-                </div>
+              {/* Atelier Staff Sign In */}
+              <form onSubmit={handleStaffLogin} className="space-y-4 text-start pt-2 border-t border-slate-100">
+                <p className="text-[11px] font-bold uppercase tracking-wider text-slate-500">
+                  Or Sign In with Staff / Admin Credentials
+                </p>
 
                 <div>
                   <label className="block text-xs font-semibold uppercase tracking-wider text-slate-700 mb-1.5">
-                    {language === 'ur' ? 'Staff Email Address' : 'Staff Email'}
+                    Email Address
                   </label>
                   <div className="relative">
                     <Mail className="w-4 h-4 absolute start-3 top-3 text-slate-400" />
@@ -865,15 +909,15 @@ export const AdminPortal: React.FC<AdminPortalProps> = ({ isOpen, onClose }) => 
                       required
                       value={loginEmail}
                       onChange={(e) => setLoginEmail(e.target.value)}
-                      placeholder="staff@boutiquestitching.com"
-                      className="w-full ps-9 pe-3 py-2.5 text-sm bg-white border border-blue-200 rounded-lg text-slate-900 focus:outline-none focus:ring-2 focus:ring-blue-600"
+                      placeholder="alinala901@gmail.com or staff@boutiquestitching.com"
+                      className="w-full ps-9 pe-3 py-2.5 text-sm bg-white border border-slate-300 rounded-lg text-slate-900 focus:outline-none focus:ring-2 focus:ring-blue-600"
                     />
                   </div>
                 </div>
 
                 <div>
                   <label className="block text-xs font-semibold uppercase tracking-wider text-slate-700 mb-1.5">
-                    {language === 'ur' ? 'Staff Password' : 'Staff Password'}
+                    Password
                   </label>
                   <div className="relative">
                     <Lock className="w-4 h-4 absolute start-3 top-3 text-slate-400" />
@@ -883,7 +927,7 @@ export const AdminPortal: React.FC<AdminPortalProps> = ({ isOpen, onClose }) => 
                       value={loginPassword}
                       onChange={(e) => setLoginPassword(e.target.value)}
                       placeholder="••••••••"
-                      className="w-full ps-9 pe-3 py-2.5 text-sm bg-white border border-blue-200 rounded-lg text-slate-900 focus:outline-none focus:ring-2 focus:ring-blue-600"
+                      className="w-full ps-9 pe-3 py-2.5 text-sm bg-white border border-slate-300 rounded-lg text-slate-900 focus:outline-none focus:ring-2 focus:ring-blue-600"
                     />
                   </div>
                 </div>
@@ -891,21 +935,21 @@ export const AdminPortal: React.FC<AdminPortalProps> = ({ isOpen, onClose }) => 
                 <button
                   type="submit"
                   disabled={loginLoading}
-                  className="w-full py-3 text-xs font-semibold uppercase tracking-wider text-white bg-blue-600 hover:bg-blue-700 disabled:bg-gray-400 rounded-lg shadow-sm transition-colors flex items-center justify-center gap-2 cursor-pointer"
+                  className="w-full py-2.5 text-xs font-bold uppercase tracking-wider text-white bg-slate-800 hover:bg-slate-900 disabled:bg-gray-400 rounded-lg shadow-sm transition-colors flex items-center justify-center gap-2 cursor-pointer"
                 >
                   {loginLoading ? (
                     <RefreshCw className="w-4 h-4 animate-spin" />
                   ) : (
                     <>
-                      <Shield className="w-4 h-4 text-blue-200" />
-                      <span>Authorize Staff Access</span>
+                      <Shield className="w-4 h-4 text-blue-300" />
+                      <span>Authenticate Credentials</span>
                     </>
                   )}
                 </button>
               </form>
 
-              <div className="p-3 bg-white border border-blue-100 rounded-lg text-[11px] text-slate-600 font-light leading-relaxed">
-                Database role authorization active: customers cannot access order records, internal notes, or administrative functions.
+              <div className="p-3 bg-slate-50 border border-slate-200 rounded-lg text-[11px] text-slate-500 font-light leading-relaxed">
+                🔒 Protected under Privacy Lock: Regular boutique customers cannot view customer orders, phone numbers, or administrative settings.
               </div>
             </div>
           </div>

@@ -21,7 +21,7 @@ export const Footer: React.FC<FooterProps> = ({
   onOpenDashboard,
 }) => {
   const { t } = useLanguage();
-  const { user } = useAuth();
+  const { user, isAdmin } = useAuth();
   const [socialPlatforms, setSocialPlatforms] = useState(getSocialPlatforms);
 
   useEffect(() => {
@@ -193,7 +193,7 @@ export const Footer: React.FC<FooterProps> = ({
               <li>Custom Tailoring &amp; Alterations</li>
             </ul>
 
-            {onOpenAdminPortal && (
+            {isAdmin && onOpenAdminPortal && (
               <div className="pt-2">
                 <button
                   type="button"
@@ -201,7 +201,7 @@ export const Footer: React.FC<FooterProps> = ({
                   className="inline-flex items-center gap-1.5 px-3 py-1.5 text-[11px] font-semibold text-white bg-blue-900 hover:bg-blue-800 border border-blue-700 rounded-lg transition-colors cursor-pointer"
                 >
                   <Shield className="w-3 h-3 text-blue-400" />
-                  <span>{t('staffPortal')} (Atelier Staff)</span>
+                  <span>{t('staffPortal')} (Owner Admin)</span>
                 </button>
               </div>
             )}

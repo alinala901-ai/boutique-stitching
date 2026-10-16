@@ -37,7 +37,7 @@ export const Navbar: React.FC<NavbarProps> = ({
   onOpenAdminPortal,
 }) => {
   const { language, setLanguage, toggleLanguage, t, formatText } = useLanguage();
-  const { user, profile, isStaff, signOut } = useAuth();
+  const { user, profile, isStaff, isAdmin, signOut } = useAuth();
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
   const [langDropdownOpen, setLangDropdownOpen] = useState(false);
 
@@ -133,7 +133,7 @@ export const Navbar: React.FC<NavbarProps> = ({
                   <span className="max-w-[100px] truncate">{displayName}</span>
                 </button>
 
-                {onOpenAdminPortal && (
+                {isAdmin && onOpenAdminPortal && (
                   <button
                     type="button"
                     onClick={onOpenAdminPortal}
@@ -141,24 +141,12 @@ export const Navbar: React.FC<NavbarProps> = ({
                     title={formatText('Dashboard & Price Manager', 'ڈیش بورڈ اور قیمتیں', 'Dashboard & Price Manager')}
                   >
                     <LayoutDashboard className="w-3.5 h-3.5 text-white" />
-                    <span className="font-bold">{formatText('Dashboard & Prices', 'ڈیش بورڈ اور قیمتیں', 'Dashboard & Prices')}</span>
+                    <span className="font-bold">{formatText('Admin Dashboard', 'ایڈمن ڈیش بورڈ', 'Admin Dashboard')}</span>
                   </button>
                 )}
               </div>
             ) : (
               <div className="flex items-center gap-2">
-                {onOpenAdminPortal && (
-                  <button
-                    type="button"
-                    onClick={onOpenAdminPortal}
-                    className="flex items-center gap-1.5 px-3 py-1.5 text-xs font-bold text-white bg-blue-600 hover:bg-blue-700 active:bg-blue-800 rounded-lg shadow-sm transition-all cursor-pointer"
-                    title={formatText('Dashboard & Price Manager', 'ڈیش بورڈ اور قیمتیں', 'Dashboard & Price Manager')}
-                  >
-                    <LayoutDashboard className="w-3.5 h-3.5 text-white" />
-                    <span className="font-bold">{formatText('Dashboard & Prices', 'ڈیش بورڈ اور قیمتیں', 'Dashboard & Prices')}</span>
-                  </button>
-                )}
-
                 {onOpenAuth && (
                   <button
                     type="button"
@@ -359,21 +347,17 @@ export const Navbar: React.FC<NavbarProps> = ({
                     <span>{displayName} ({t('navMyAccount')})</span>
                   </button>
 
-                  {onOpenAdminPortal && (
+                  {isAdmin && onOpenAdminPortal && (
                     <button
                       type="button"
                       onClick={() => {
                         setMobileMenuOpen(false);
                         onOpenAdminPortal();
                       }}
-                      className={`w-full px-3 py-2 text-sm font-semibold rounded-lg transition-colors text-left flex items-center gap-2 ${
-                        isStaff
-                          ? 'text-white bg-blue-800 hover:bg-blue-900 shadow-xs'
-                          : 'text-blue-900 bg-blue-50 hover:bg-blue-100 border border-blue-200'
-                      }`}
+                      className="w-full px-3 py-2 text-sm font-semibold rounded-lg transition-colors text-left flex items-center gap-2 text-white bg-blue-800 hover:bg-blue-900 shadow-xs cursor-pointer"
                     >
-                      <Shield className="w-4 h-4 text-blue-400" />
-                      <span>{t('staffPortal')} ({isStaff ? t('adminRoleStaff') : 'Staff Access'})</span>
+                      <LayoutDashboard className="w-4 h-4 text-blue-300" />
+                      <span>{formatText('Admin Dashboard', 'ایڈمن ڈیش بورڈ', 'Admin Dashboard')}</span>
                     </button>
                   )}
 
@@ -413,20 +397,6 @@ export const Navbar: React.FC<NavbarProps> = ({
                       {t('navSignUp')}
                     </button>
                   </div>
-
-                  {onOpenAdminPortal && (
-                    <button
-                      type="button"
-                      onClick={() => {
-                        setMobileMenuOpen(false);
-                        onOpenAdminPortal();
-                      }}
-                      className="w-full py-2.5 px-3 text-center text-xs font-bold text-white bg-blue-600 hover:bg-blue-700 active:bg-blue-800 rounded-lg shadow-sm flex items-center justify-center gap-2 transition-colors cursor-pointer"
-                    >
-                      <LayoutDashboard className="w-4 h-4" />
-                      <span>{formatText('📊 Dashboard & Prices (Add & Delete)', '📊 ڈیش بورڈ اور قیمتیں (شامل اور ڈیلیٹ)', '📊 Dashboard & Prices')}</span>
-                    </button>
-                  )}
                 </div>
               )}
             </div>

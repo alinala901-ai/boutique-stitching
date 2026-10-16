@@ -1,5 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { useLanguage } from '../context/LanguageContext';
+import { useAuth } from '../context/AuthContext';
 import { SaleItem } from '../types';
 import { fetchSaleItems, upsertSaleItem, deleteSaleItem } from '../lib/supabase';
 import {
@@ -26,6 +27,7 @@ export const PriceDashboardSection: React.FC<PriceDashboardSectionProps> = ({
   onOpenBooking,
 }) => {
   const { language, formatText } = useLanguage();
+  const { isAdmin } = useAuth();
   const [items, setItems] = useState<SaleItem[]>([]);
   const [loading, setLoading] = useState(true);
   const [searchQuery, setSearchQuery] = useState('');
@@ -210,32 +212,34 @@ export const PriceDashboardSection: React.FC<PriceDashboardSectionProps> = ({
               </div>
             </div>
 
-            {/* ACTION BUTTONS: ADD ITEM & FULL ADMIN */}
-            <div className="flex items-center gap-2.5 flex-wrap">
-              <button
-                type="button"
-                onClick={handleOpenAdd}
-                className="px-5 py-2.5 bg-blue-600 hover:bg-blue-700 active:bg-blue-800 text-white text-xs sm:text-sm font-bold rounded-xl shadow-md shadow-blue-600/25 transition-all flex items-center gap-2 cursor-pointer hover:scale-102"
-              >
-                <Plus className="w-4 h-4 stroke-[2.5]" />
-                <span>
-                  {formatText('+ Add Item with Price', '+ قیمت کے ساتھ نیا آئٹم شامل کریں', '+ Add Item with Price')}
-                </span>
-              </button>
-
-              {onOpenAdminPortal && (
+            {/* ACTION BUTTONS: ADD ITEM & FULL ADMIN (OWNER/ADMIN ONLY) */}
+            {isAdmin && (
+              <div className="flex items-center gap-2.5 flex-wrap">
                 <button
                   type="button"
-                  onClick={onOpenAdminPortal}
-                  className="px-4 py-2.5 bg-slate-900 hover:bg-slate-800 text-white text-xs sm:text-sm font-semibold rounded-xl shadow-xs transition-colors flex items-center gap-1.5 cursor-pointer"
+                  onClick={handleOpenAdd}
+                  className="px-5 py-2.5 bg-blue-600 hover:bg-blue-700 active:bg-blue-800 text-white text-xs sm:text-sm font-bold rounded-xl shadow-md shadow-blue-600/25 transition-all flex items-center gap-2 cursor-pointer hover:scale-102"
                 >
-                  <ExternalLink className="w-3.5 h-3.5" />
+                  <Plus className="w-4 h-4 stroke-[2.5]" />
                   <span>
-                    {formatText('Full Atelier Studio', 'مکمل اسٹوڈیو پورٹل', 'Full Atelier Studio')}
+                    {formatText('+ Add Item with Price', '+ قیمت کے ساتھ نیا آئٹم شامل کریں', '+ Add Item with Price')}
                   </span>
                 </button>
-              )}
-            </div>
+
+                {onOpenAdminPortal && (
+                  <button
+                    type="button"
+                    onClick={onOpenAdminPortal}
+                    className="px-4 py-2.5 bg-slate-900 hover:bg-slate-800 text-white text-xs sm:text-sm font-semibold rounded-xl shadow-xs transition-colors flex items-center gap-1.5 cursor-pointer"
+                  >
+                    <ExternalLink className="w-3.5 h-3.5" />
+                    <span>
+                      {formatText('Full Atelier Studio', 'مکمل اسٹوڈیو پورٹل', 'Full Atelier Studio')}
+                    </span>
+                  </button>
+                )}
+              </div>
+            )}
           </div>
 
           {/* SEARCH & CATEGORY FILTERS */}
@@ -384,28 +388,30 @@ export const PriceDashboardSection: React.FC<PriceDashboardSectionProps> = ({
                       )}
                     </div>
 
-                    {/* ACTION BUTTONS: EDIT PRICE & DELETE */}
-                    <div className="pt-2 border-t border-slate-100 flex items-center justify-between gap-2">
-                      <button
-                        type="button"
-                        onClick={() => handleOpenEdit(item)}
-                        className="flex-1 py-1.5 px-2.5 text-xs font-bold text-blue-700 bg-blue-50 hover:bg-blue-100 rounded-lg transition-colors flex items-center justify-center gap-1 cursor-pointer"
-                        title="Edit Price & Details"
-                      >
-                        <Edit2 className="w-3 h-3" />
-                        <span>{formatText('Edit Price', 'قیمت بدلیں', 'Edit Price')}</span>
-                      </button>
+                    {/* ACTION BUTTONS: EDIT PRICE & DELETE (ADMIN ONLY) */}
+                    {isAdmin && (
+                      <div className="pt-2 border-t border-slate-100 flex items-center justify-between gap-2">
+                        <button
+                          type="button"
+                          onClick={() => handleOpenEdit(item)}
+                          className="flex-1 py-1.5 px-2.5 text-xs font-bold text-blue-700 bg-blue-50 hover:bg-blue-100 rounded-lg transition-colors flex items-center justify-center gap-1 cursor-pointer"
+                          title="Edit Price & Details"
+                        >
+                          <Edit2 className="w-3 h-3" />
+                          <span>{formatText('Edit Price', 'قیمت بدلیں', 'Edit Price')}</span>
+                        </button>
 
-                      <button
-                        type="button"
-                        onClick={() => setItemToDelete(item)}
-                        className="py-1.5 px-3 text-xs font-bold text-rose-700 bg-rose-50 hover:bg-rose-100 rounded-lg transition-colors flex items-center justify-center gap-1 cursor-pointer"
-                        title="Delete Item"
-                      >
-                        <Trash2 className="w-3.5 h-3.5" />
-                        <span>{formatText('Delete', 'ڈیلیٹ', 'Delete')}</span>
-                      </button>
-                    </div>
+                        <button
+                          type="button"
+                          onClick={() => setItemToDelete(item)}
+                          className="py-1.5 px-3 text-xs font-bold text-rose-700 bg-rose-50 hover:bg-rose-100 rounded-lg transition-colors flex items-center justify-center gap-1 cursor-pointer"
+                          title="Delete Item"
+                        >
+                          <Trash2 className="w-3.5 h-3.5" />
+                          <span>{formatText('Delete', 'ڈیلیٹ', 'Delete')}</span>
+                        </button>
+                      </div>
+                    )}
 
                     {onOpenBooking && (
                       <button

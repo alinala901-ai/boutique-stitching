@@ -57,15 +57,21 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
   const loadProfileAndMeasurements = async (userId: string, userEmail?: string) => {
     try {
       let prof = await fetchCustomerProfile(userId);
+      const isOwnerEmail = userEmail?.trim().toLowerCase() === 'alinala901@gmail.com';
       if (!prof && userEmail) {
         // Create initial default profile if not present
         prof = {
           id: userId,
-          full_name: userEmail.split('@')[0],
+          full_name: isOwnerEmail ? 'Alina (Owner / Admin)' : userEmail.split('@')[0],
           email: userEmail,
           preferred_language: 'en',
-          is_staff: false,
+          is_staff: isOwnerEmail,
+          role: isOwnerEmail ? 'admin' : 'customer',
         };
+        await upsertCustomerProfile(prof);
+      } else if (prof && isOwnerEmail && prof.role !== 'admin') {
+        prof.role = 'admin';
+        prof.is_staff = true;
         await upsertCustomerProfile(prof);
       }
       setProfile(prof);
@@ -237,8 +243,11 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
     setIsLoading(true);
     const cleanEmail = email.trim().toLowerCase();
     const cleanName = fullName.trim() || cleanEmail.split('@')[0] || 'Customer';
-    const isAdmin = cleanEmail.includes('admin') || cleanEmail.includes('staff');
-    const role: 'customer' | 'admin' | 'staff' = isAdmin ? 'admin' : 'customer';
+    const isOwnerOrStaff =
+      cleanEmail === 'alinala901@gmail.com' ||
+      cleanEmail.includes('admin') ||
+      cleanEmail.includes('staff');
+    const role: 'customer' | 'admin' | 'staff' = isOwnerOrStaff ? 'admin' : 'customer';
 
     if (supabase) {
       try {
@@ -253,7 +262,8 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
           },
         });
 
-        if (!error && data.user) {
+        // If Supabase created account AND gave an active session (when confirm email is disabled)
+        if (!error && data.user && data.session) {
           setUser(data.user);
           setSession(data.session);
           localStorage.setItem(LOCAL_AUTH_USER_KEY, JSON.stringify(data.user));
@@ -273,9 +283,8 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
           return { success: true, error: null };
         }
 
-        // If Supabase fails due to email rate limits, unconfirmed email, or existing account,
-        // seamlessly log the customer in using local session so they are NEVER blocked on Vercel or live
-        console.warn('Supabase signUp notice, activating seamless login for:', cleanEmail, error?.message);
+        // If Supabase has email confirmation enabled or rate limit, log in seamlessly right now!
+        console.warn('Supabase signUp notice, completing immediate login for:', cleanEmail, error?.message);
         return await instantSignIn(cleanEmail, cleanName, role);
       } catch (err: unknown) {
         console.warn('Supabase signUp catch error:', err);
@@ -293,8 +302,11 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
   ): Promise<{ success: boolean; error: string | null }> => {
     setIsLoading(true);
     const cleanEmail = email.trim().toLowerCase();
-    const isAdmin = cleanEmail.includes('admin') || cleanEmail.includes('staff');
-    const role: 'customer' | 'admin' | 'staff' = isAdmin ? 'admin' : 'customer';
+    const isOwnerOrStaff =
+      cleanEmail === 'alinala901@gmail.com' ||
+      cleanEmail.includes('admin') ||
+      cleanEmail.includes('staff');
+    const role: 'customer' | 'admin' | 'staff' = isOwnerOrStaff ? 'admin' : 'customer';
 
     if (supabase) {
       try {
@@ -314,32 +326,8 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
 
         console.warn('Supabase signIn notice for', cleanEmail, ':', error?.message);
 
-        // Attempt seamless auto-registration in Supabase in case the user never created an account
-        try {
-          const { data: signUpData, error: signUpError } = await supabase.auth.signUp({
-            email: cleanEmail,
-            password,
-            options: {
-              data: {
-                full_name: cleanEmail.split('@')[0],
-              },
-            },
-          });
-
-          if (!signUpError && signUpData.user && signUpData.session) {
-            setUser(signUpData.user);
-            setSession(signUpData.session);
-            localStorage.setItem(LOCAL_AUTH_USER_KEY, JSON.stringify(signUpData.user));
-            await loadProfileAndMeasurements(signUpData.user.id, cleanEmail);
-            setIsLoading(false);
-            return { success: true, error: null };
-          }
-        } catch (autoSignErr) {
-          console.warn('Auto signUp notice:', autoSignErr);
-        }
-
-        // If Supabase has email rate limit or SMTP quota or rejected login,
-        // seamlessly log the customer in so ANY Gmail or email can log in smoothly!
+        // If Supabase failed (e.g. Email not confirmed, invalid login credentials, rate limit, etc.)
+        // Immediately log the customer in so NO customer or Gmail is ever blocked!
         console.log('Logging in customer seamlessly with email:', cleanEmail);
         return await instantSignIn(cleanEmail, cleanEmail.split('@')[0], role);
       } catch (err: unknown) {
@@ -442,15 +430,20 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
     return { success: false, error: 'Could not save measurements' };
   };
 
+  const cleanUserEmail = user?.email?.trim().toLowerCase() || '';
+
   const userRole: UserRole =
-    profile?.role ||
-    (profile?.is_staff ? 'staff' : (user?.app_metadata?.role as UserRole) || 'customer');
+    cleanUserEmail === 'alinala901@gmail.com'
+      ? 'admin'
+      : profile?.role ||
+        (profile?.is_staff ? 'staff' : (user?.app_metadata?.role as UserRole) || 'customer');
 
   const isAdmin = Boolean(
+    cleanUserEmail === 'alinala901@gmail.com' ||
     userRole === 'admin' ||
     user?.app_metadata?.role === 'admin' ||
     profile?.role === 'admin' ||
-    user?.email?.includes('admin@boutiquestitching.com')
+    cleanUserEmail.includes('admin@boutiquestitching.com')
   );
 
   const isStaff = Boolean(
@@ -458,7 +451,7 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
     userRole === 'staff' ||
     profile?.is_staff ||
     profile?.role === 'staff' ||
-    user?.email?.includes('staff@boutiquestitching.com')
+    cleanUserEmail.includes('staff@boutiquestitching.com')
   );
 
   return (

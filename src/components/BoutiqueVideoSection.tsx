@@ -1,5 +1,6 @@
 import React, { useState, useEffect, useRef } from 'react';
 import { useLanguage } from '../context/LanguageContext';
+import { useAuth } from '../context/AuthContext';
 import {
   getYouTubeVideoId,
   isDirectVideoUrl,
@@ -41,6 +42,7 @@ export const BoutiqueVideoSection: React.FC<BoutiqueVideoSectionProps> = ({
   onOpenAdminSettings,
 }) => {
   const { t, language, formatText } = useLanguage();
+  const { isAdmin } = useAuth();
   const [videosList, setVideosList] = useState<BoutiqueVideoItem[]>(getBoutiqueVideos);
   const [activeVideoIndex, setActiveVideoIndex] = useState<number>(0);
   const [isPlaying, setIsPlaying] = useState<boolean>(false);
@@ -319,14 +321,16 @@ export const BoutiqueVideoSection: React.FC<BoutiqueVideoSectionProps> = ({
               </a>
             )}
 
-            <button
-              type="button"
-              onClick={handleOpenEditModal}
-              className="inline-flex items-center gap-1 px-2.5 py-1 bg-white hover:bg-blue-50 text-blue-700 border border-blue-200 text-[11px] font-semibold rounded-lg shadow-2xs transition-colors cursor-pointer"
-            >
-              <Edit3 className="w-3 h-3" />
-              <span>{formatText('Change Video Link', 'ویڈیو لنک تبدیل کریں', 'Change Video Link')}</span>
-            </button>
+            {isAdmin && (
+              <button
+                type="button"
+                onClick={handleOpenEditModal}
+                className="inline-flex items-center gap-1 px-2.5 py-1 bg-white hover:bg-blue-50 text-blue-700 border border-blue-200 text-[11px] font-semibold rounded-lg shadow-2xs transition-colors cursor-pointer"
+              >
+                <Edit3 className="w-3 h-3" />
+                <span>{formatText('Change Video Link', 'ویڈیو لنک تبدیل کریں', 'Change Video Link')}</span>
+              </button>
+            )}
           </div>
         </div>
 
@@ -454,13 +458,15 @@ export const BoutiqueVideoSection: React.FC<BoutiqueVideoSectionProps> = ({
                         'Video play error. Meharbani farma kar link check karein.'
                       )}
                     </p>
-                    <button
-                      type="button"
-                      onClick={handleOpenEditModal}
-                      className="mt-3 px-4 py-1.5 bg-blue-600 text-white rounded-lg text-xs font-bold"
-                    >
-                      {formatText('Change URL', 'لنک تبدیل کریں', 'URL Change Karein')}
-                    </button>
+                    {isAdmin && (
+                      <button
+                        type="button"
+                        onClick={handleOpenEditModal}
+                        className="mt-3 px-4 py-1.5 bg-blue-600 text-white rounded-lg text-xs font-bold"
+                      >
+                        {formatText('Change URL', 'لنک تبدیل کریں', 'URL Change Karein')}
+                      </button>
+                    )}
                   </div>
                 )}
 
@@ -545,13 +551,15 @@ export const BoutiqueVideoSection: React.FC<BoutiqueVideoSectionProps> = ({
                   <p className="text-slate-300 text-xs max-w-md mb-4">
                     {getVideoDesc(currentVideo)}
                   </p>
-                  <button
-                    type="button"
-                    onClick={handleOpenEditModal}
-                    className="px-4 py-2 bg-blue-600 hover:bg-blue-500 text-white rounded-xl text-xs font-bold transition-all shadow-md"
-                  >
-                    {formatText('Insert Boutique Video Link', 'بوتیک ویڈیو لنک درج کریں', 'Video Link Dalein')}
-                  </button>
+                  {isAdmin && (
+                    <button
+                      type="button"
+                      onClick={handleOpenEditModal}
+                      className="px-4 py-2 bg-blue-600 hover:bg-blue-500 text-white rounded-xl text-xs font-bold transition-all shadow-md"
+                    >
+                      {formatText('Insert Boutique Video Link', 'بوتیک ویڈیو لنک درج کریں', 'Video Link Dalein')}
+                    </button>
+                  )}
                 </div>
               </div>
             )}
@@ -594,16 +602,18 @@ export const BoutiqueVideoSection: React.FC<BoutiqueVideoSectionProps> = ({
                 </span>
               </button>
 
-              <button
-                type="button"
-                onClick={handleOpenEditModal}
-                className="px-4 py-2 bg-slate-100 hover:bg-slate-200 text-slate-700 text-xs font-medium rounded-xl transition-colors flex items-center justify-center gap-1.5 cursor-pointer"
-              >
-                <Edit3 className="w-3.5 h-3.5 text-slate-500" />
-                <span>
-                  {formatText('Edit Video Link', 'ویڈیو لنک بدلیں', 'Video Link Badlein')}
-                </span>
-              </button>
+              {isAdmin && (
+                <button
+                  type="button"
+                  onClick={handleOpenEditModal}
+                  className="px-4 py-2 bg-slate-100 hover:bg-slate-200 text-slate-700 text-xs font-medium rounded-xl transition-colors flex items-center justify-center gap-1.5 cursor-pointer"
+                >
+                  <Edit3 className="w-3.5 h-3.5 text-slate-500" />
+                  <span>
+                    {formatText('Edit Video Link', 'ویڈیو لنک بدلیں', 'Video Link Badlein')}
+                  </span>
+                </button>
+              )}
             </div>
           </div>
 

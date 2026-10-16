@@ -256,7 +256,7 @@ export const CustomerDashboard: React.FC<CustomerDashboardProps> = ({
           </div>
 
           <div className="flex items-center gap-2">
-            {isStaff && onOpenAdminPortal && (
+            {isAdmin && onOpenAdminPortal && (
               <button
                 type="button"
                 onClick={() => {

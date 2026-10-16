@@ -42,39 +42,43 @@ interface BoutiqueAIChatbotProps {
 
 const BOUTIQUE_KNOWLEDGE_BASE = `
 You are the official AI Assistant of "Boutique Stitching" located in Sadiqabad, Punjab, Pakistan.
-Your goal is to answer ANY customer question with extreme politeness, expertise, and precision in Urdu, Roman Urdu, or English based on the customer's language.
+
+PRIMARY LANGUAGE REQUIREMENT (USER & OWNER MANDATE):
+You MUST ALWAYS CHAT IN POLITE, PROFESSIONAL, AND CLEAR ENGLISH.
+Even if a customer greets or types in Urdu or Roman Urdu, provide your main comprehensive response in English with courteous hospitality ("Assalam-o-Alaikum", "Welcome to Boutique Stitching Sadiqabad").
 
 KEY BOUTIQUE DETAILS:
-- Name: Boutique Stitching Sadiqabad (بوتیک سلائی سٹوڈیو صادق آباد)
+- Name: Boutique Stitching Sadiqabad
 - Address: Main Bazar / Katchery Road, Sadiqabad, District Rahim Yar Khan, Punjab, Pakistan.
-- Shop Timings: Open Monday to Sunday, 10:00 AM to 10:00 PM (Friday break: 1:00 PM to 2:30 PM).
-- Master Craftsmen: Master Tariq & team of senior artisan cutters and embroiderers.
+- Shop Timings: Open Monday to Sunday, 10:00 AM to 10:00 PM (Friday prayer break: 1:00 PM to 2:30 PM).
+- Master Craftsmen: Master Tariq & team of senior artisan tailors, pattern cutters, and hand embroiderers.
 - Contact / WhatsApp: 0301-2345678 / 0333-9876543.
 
 STITCHING RATES & PRICING (PKR):
-- Ladies Simple Suit (Lawn / Cotton / Latha): Rs. 1,800
-- Ladies 3-Piece Designer Stitched Suit (Lace work, Piping, Cutwork, Daman organza): Rs. 2,200 - Rs. 2,800
-- Luxury Party Wear / Festive Fancy Suit: Rs. 3,500 - Rs. 5,400
-- Royal Bridal Couture (Lehenga Choli, Maxi, Gharara with hand zardozi & dabka): Rs. 8,000 - Rs. 18,000
-- Kids Stitched Kurta Pajama / Frock: Rs. 1,200 - Rs. 2,850
-- Minor Alterations & Fitting Adjustments: Rs. 500 - Rs. 800
-- Express 48-Hour Urgent Delivery: Normal rate + Rs. 600 - Rs. 1,000 extra.
+- Ladies Simple Suit (Lawn / Cotton / Latha): PKR 1,800
+- Ladies 3-Piece Designer Stitched Suit (Lace work, Piping, Cutwork, Daman organza): PKR 2,200 - PKR 2,800
+- Luxury Party Wear / Festive Fancy Suit: PKR 3,500 - PKR 5,400
+- Royal Bridal Couture (Lehenga Choli, Maxi, Gharara with hand zardozi & dabka): PKR 8,000 - PKR 18,000
+- Kids Stitched Kurta Pajama / Frock: PKR 1,200 - PKR 2,850
+- Minor Alterations & Fitting Adjustments: PKR 500 - PKR 800
+- Express 48-Hour Urgent Delivery: Normal rate + PKR 600 - PKR 1,000 urgent surcharge.
+- Special Offer: Mid-Season 25% Off stitching discount is currently active on the live rates dashboard!
 
 DELIVERY TIME:
-- Normal Suits: 4 to 7 working days.
-- Express Urgent: 48 Hours guaranteed.
+- Standard Delivery: 4 to 7 working days.
+- Express Urgent: 48 Hours guaranteed with precision fitting.
 - Bridal & Heavy Embroidery: 15 to 25 working days.
 
 FABRIC & SERVICES:
-- Customers can bring their own unstitched cloth OR pick designer fabric & lace trims directly from our boutique.
-- We provide high-quality itch-free inner cotton lining (astar), high-grade threads, zips, buttons, and canvas interlining.
+- Customers can bring their own unstitched cloth OR pick designer fabrics & lace trims directly from our boutique.
+- We provide premium, itch-free soft inner cotton lining (astar), high-grade threads, invisible zips, and canvas interlining.
 - Female staff available for ladies' measurements in our private fitting studio.
 - Customers can also send their best-fitting sample suit or use the online measurement guide.
 - Online Order Tracking is available using the Order Reference Number.
 
 TONE & STYLE:
-- Extremely warm, respectful, Pakistani hospitality ("السلام علیکم", "خوش آمدید", "جی بالکل").
-- Clear, helpful, concise answers with specific prices and timelines.
+- Extremely warm, respectful, Pakistani hospitality in clear English ("Assalam-o-Alaikum", "Welcome", "Certainly!").
+- Clear, helpful, concise answers with specific PKR prices and timelines.
 `;
 
 export const BoutiqueAIChatbot: React.FC<BoutiqueAIChatbotProps> = ({
@@ -92,12 +96,9 @@ export const BoutiqueAIChatbot: React.FC<BoutiqueAIChatbotProps> = ({
 
   const messagesEndRef = useRef<HTMLDivElement>(null);
 
+  // English-first friendly welcoming message
   const initialWelcomeText =
-    language === 'ur'
-      ? 'السلام علیکم! خوش آمدید! میں بوتیک سلائی سٹوڈیو صادق آباد کا باضابطہ اے آئی اسسٹنٹ ہوں۔ آپ مجھ سے سلائی کے ریٹس، برائیڈل سوٹس، ڈیلیوری کے وقت، ناپ دینے کے طریقے یا آرڈر ٹریک کرنے کے بارے میں کوئی بھی سوال پوچھ سکتے ہیں!'
-      : language === 'roman_ur'
-      ? 'Assalam-o-Alaikum! Khush amdeed! Main Boutique Stitching Sadiqabad ka official AI Assistant hoon. Aap mujh se silai ke rates, bridal suits, delivery time, naap dene ka tareeqa ya order track karne ke mutaliq koi bhi sawal pooch sakte hain!'
-      : 'Assalam-o-Alaikum & Welcome! I am the official AI Assistant for Boutique Stitching Sadiqabad. Ask me anything about our stitching rates, bridal wear, delivery timelines, measurement guide, or tracking your order!';
+    'Assalam-o-Alaikum & Welcome! I am your Boutique Stitching AI Assistant. How can I help you today with our stitching rates in PKR, bridal couture, delivery timelines, measurement guide, or tracking your order? Feel free to ask anything in English!';
 
   const [messages, setMessages] = useState<Message[]>([
     {
@@ -110,28 +111,28 @@ export const BoutiqueAIChatbot: React.FC<BoutiqueAIChatbotProps> = ({
 
   const quickPrompts = [
     {
-      label: formatText('Stitching Rates', 'سلائی کے ریٹس کیا ہیں؟', 'Silai Ke Rates?'),
-      prompt: 'سلائی کے تمام ریٹس کیا ہیں؟ (What are the stitching rates in PKR?)',
+      label: 'Stitching Rates (PKR)',
+      prompt: 'What are your complete stitching rates for ladies and kids suits in PKR?',
     },
     {
-      label: formatText('Bridal Stitching', 'برائیڈل اور لہنگا سلائی؟', 'Bridal Silai?'),
-      prompt: 'برائیڈل لہنگا چولی اور زردوزی سوٹ کی سلائی کتنے میں ہوتی ہے؟',
+      label: 'Bridal & Lehenga',
+      prompt: 'What are the charges and timelines for bridal lehenga choli and fancy festive suits?',
     },
     {
-      label: formatText('Delivery Time', 'سوٹ کتنے دن میں تیار ہوگا؟', 'Delivery Time?'),
-      prompt: 'سوٹ تیار ہونے میں کتنے دن لگتے ہیں اور کیا ارجنٹ سلائی دستیاب ہے؟',
+      label: 'Delivery Timelines',
+      prompt: 'How many days does normal stitching take, and do you offer 48-hour express service?',
     },
     {
-      label: formatText('Boutique Location', 'دکان کا پتہ اور ٹائمنگ؟', 'Dukan Ka Pata?'),
-      prompt: 'صادق آباد میں بوتیک کا ایڈریس اور ٹائمنگ کیا ہے؟',
+      label: 'Boutique Location',
+      prompt: 'Where is your boutique located in Sadiqabad and what are your opening hours?',
     },
     {
-      label: formatText('Measurement Guide', 'ناپ کیسے دینا ہے؟', 'Naap Kaise Dein?'),
-      prompt: 'لیڈیز اور بچوں کا ناپ (measurements) دینے کا کیا طریقہ ہے؟',
+      label: 'Measurement Guide',
+      prompt: 'How can I provide my measurements or send a sample suit?',
     },
     {
-      label: formatText('Track My Order', 'میرا آرڈر ٹریک کریں', 'Track Order?'),
-      prompt: 'میں اپنے سلے ہوئے سوٹ کا اسٹیٹس کیسے چیک کروں؟',
+      label: 'Track My Order',
+      prompt: 'How can I check the live status of my stitching order with my reference number?',
     },
   ];
 
@@ -142,7 +143,7 @@ export const BoutiqueAIChatbot: React.FC<BoutiqueAIChatbotProps> = ({
     }
   }, [messages, isOpen, isTyping]);
 
-  // Offline deterministic fallback knowledge engine (Guaranteed answer for any question!)
+  // Offline deterministic fallback knowledge engine (Guaranteed English answers for any question!)
   const getOfflineSmartAnswer = (query: string): { text: string; action?: Message['action'] } => {
     const q = query.toLowerCase().trim();
 
@@ -156,22 +157,23 @@ export const BoutiqueAIChatbot: React.FC<BoutiqueAIChatbotProps> = ({
       q.includes('rupee') ||
       q.includes('pkr') ||
       q.includes('charges') ||
+      q.includes('cost') ||
       q.includes('خرچہ')
     ) {
       if (q.includes('bridal') || q.includes('برائیڈل') || q.includes('لہنگا') || q.includes('lehenga')) {
         return {
-          text: `👰 **برائیڈل اور لہنگا چولی سلائی ریٹس:**\n- سادہ برائیڈل سوٹ: 8,000 روپے سے شروع\n- فل زردوزی، کورا دبکہ اور ہاتھ کی کڑھائی والا لہنگا چولی/میکسی: 12,000 تا 18,000 روپے\n- خصوصی برائیڈل کین کین، ڈبل استر اور ٹسلز شامل ہیں۔ ڈیلیوری وقت: 15 سے 25 دن۔`,
+          text: `👰 **Bridal & Festive Lehenga Choli Stitching Rates:**\n\n- **Simple Bridal Suit / Gharara:** Starting from PKR 8,000\n- **Royal Zardozi & Hand Dabka Lehenga Choli / Maxi:** PKR 12,000 to PKR 18,000\n- **Premium Inclusions:** Soft volume can-can, itch-free pure cotton lining (astar), padded bust cups, and customized designer latkans/tassels.\n- **Delivery Timeline:** 15 to 25 working days with trial fitting.`,
           action: { type: 'booking', label: 'Book Bridal Consultation' },
         };
       }
-      if (q.includes('kid') || q.includes('بچوں') || q.includes('baby') || q.includes('bachon')) {
+      if (q.includes('kid') || q.includes('بچوں') || q.includes('baby') || q.includes('bachon') || q.includes('child')) {
         return {
-          text: `👶 **بچوں کے سوٹس کی سلائی:**\n- بچوں کا سادہ کرتا پاجامہ / شلوار قمیض: 1,200 روپے\n- فینسی کڑھائی اور فیسٹیو فراک/واسکٹ سیٹ: 1,800 تا 2,850 روپے\n- بچوں کے لیے چبھن سے پاک نرم سوتی استر لگایا جاتا ہے۔`,
+          text: `👶 **Kids Custom Tailoring Rates:**\n\n- **Kids Simple Kurta Pajama / Shalwar Kameez:** PKR 1,200\n- **Festive Frocks, Lehengas & Waistcoat Sets:** PKR 1,800 to PKR 2,850\n- **Comfort Guarantee:** Ultra-soft, breathable cotton lining to ensure itch-free comfort for baby and children's skin.`,
           action: { type: 'rates', label: 'View Kids Catalog' },
         };
       }
       return {
-        text: `💰 **بوتیک سلائی سٹوڈیو کے باضابطہ ریٹس (PKR):**\n\n1. **سادہ لیڈیز سوٹ (لان/کاٹن/لتھا):** 1,800 روپے\n2. **ڈیزائنر 3-پیس سوٹ (لیس، پائپنگ، کٹ ورک، دامن آرگنزا):** 2,200 تا 2,800 روپے\n3. **پارٹی ویئر و فینسی فیسٹیو سوٹس:** 3,500 تا 5,400 روپے\n4. **برائیڈل لہنگا چولی / میکسی:** 8,000 تا 18,000 روپے\n5. **بچوں کی سلائی:** 1,200 تا 2,850 روپے\n6. **فٹنگ اور آلٹریشن:** 500 تا 800 روپے\n\n⚡ *نوٹ: فی الحال ویب سائٹ پر مڈ سیزن 25% سیل بھی فعال ہے!*`,
+        text: `💰 **Official Boutique Stitching Rates (PKR):**\n\n1. **Ladies Simple Suit (Lawn / Cotton / Latha):** PKR 1,800\n2. **Designer 3-Piece Stitched Suit (Lace work, Piping, Cutwork, Organza Daman):** PKR 2,200 to PKR 2,800\n3. **Luxury Party Wear & Festive Fancy Suits:** PKR 3,500 to PKR 5,400\n4. **Royal Bridal Lehenga Choli / Maxi:** PKR 8,000 to PKR 18,000\n5. **Kids Traditional & Frocks:** PKR 1,200 to PKR 2,850\n6. **Fitting & Alterations:** PKR 500 to PKR 800\n\n⚡ *Special Promotion:* Mid-Season 25% Off stitching discount is currently live on our pricing dashboard!`,
         action: { type: 'rates', label: 'View Price Dashboard' },
       };
     }
@@ -186,10 +188,11 @@ export const BoutiqueAIChatbot: React.FC<BoutiqueAIChatbotProps> = ({
       q.includes('ارجنٹ') ||
       q.includes('express') ||
       q.includes('کتنے دن') ||
+      q.includes('when') ||
       q.includes('waqt')
     ) {
       return {
-        text: `⏱️ **ڈلیوری ٹائم شیڈول:**\n\n- **نارمل ڈیلیوری:** 4 سے 7 کام کے دن۔\n- **ایکسپریس ارجنٹ سروس (48 گھنٹے):** صرف 48 گھنٹوں میں مکمل پرفیکٹ فٹنگ کی گارنٹی کے ساتھ تیار (+600 تا 1000 روپے ارجنٹ فیس)۔\n- **برائیڈل اور ہیوی کڑھائی:** 15 سے 25 دن درکار ہوتے ہیں۔\n\nاگر آپ کو کسی شادی یا تقریب کے لیے فوری سوٹ چاہیے تو ہم 48 گھنٹے ایکسپریس سروس فراہم کرتے ہیں!`,
+        text: `⏱️ **Delivery Timelines & Express Service:**\n\n- **Standard Stitching:** 4 to 7 working days.\n- **48-Hour Urgent Express:** Ready in 48 hours guaranteed with precision master fitting (+PKR 600 to PKR 1,000 express fee).\n- **Bridal & Heavy Hand Embroidery:** 15 to 25 working days.\n\nNeed a dress urgently for an upcoming event or wedding? Click below to book our 48-Hour Express service!`,
         action: { type: 'booking', label: 'Book Urgent Express' },
       };
     }
@@ -201,15 +204,17 @@ export const BoutiqueAIChatbot: React.FC<BoutiqueAIChatbotProps> = ({
       q.includes('پتہ') ||
       q.includes('ایڈریس') ||
       q.includes('کہاں') ||
+      q.includes('where') ||
       q.includes('sadiqabad') ||
       q.includes('صادق آباد') ||
       q.includes('timing') ||
+      q.includes('hours') ||
       q.includes('ٹائم') ||
       q.includes('open') ||
       q.includes('بند')
     ) {
       return {
-        text: `📍 **ہمارا پتہ اور اوقات کار:**\n\n- **پتہ:** مین بازار / کچہری روڈ، صادق آباد، ضلع رحیم یار خان، پنجاب، پاکستان۔\n- **اوقات:** پیر تا اتوار صبح 10:00 بجے سے رات 10:00 بجے تک۔\n- **جمعہ کا وقفہ:** 1:00 بجے سے 2:30 بجے تک (نماز جمعہ)۔\n- **فون / واٹس ایپ:** 0301-2345678 / 0333-9876543\n\nآپ دکان پر تشریف لا سکتے ہیں جہاں خواتین کے ناپ کے لیے لیڈیز سٹاف موجود ہے۔`,
+        text: `📍 **Boutique Location & Atelier Hours:**\n\n- **Address:** Main Bazar / Katchery Road, Sadiqabad, District Rahim Yar Khan, Punjab, Pakistan.\n- **Opening Hours:** Monday to Sunday, 10:00 AM to 10:00 PM.\n- **Friday Prayer Break:** 1:00 PM to 2:30 PM.\n- **Phone / WhatsApp:** 0301-2345678 / 0333-9876543\n\nVisit our private fitting studio in person — dedicated female staff is available for ladies' measurements.`,
         action: { type: 'whatsapp', label: 'Contact on WhatsApp' },
       };
     }
@@ -225,7 +230,7 @@ export const BoutiqueAIChatbot: React.FC<BoutiqueAIChatbotProps> = ({
       q.includes('فٹنگ')
     ) {
       return {
-        text: `✂️ **ناپ (Measurements) دینے کے ۳ آسان طریقے:**\n\n1. **بوتیک سٹوڈیو کا وزٹ:** ہماری شاپ پر خواتین کے لیے پرائیویٹ فٹنگ روم اور فیمل سٹاف دستیاب ہے۔\n2. **سیمپل سوٹ بھیجیں:** آپ اپنا پہلے سے بالکل فٹ سلا ہوا سوٹ کوریئر یا ہوم پک اپ کے ذریعے بھجوا سکتے ہیں۔\n3. **آن لائن میژرمنٹ گائیڈ:** ہماری ویب سائٹ پر انٹرایکٹو ناپ گائیڈ موجود ہے جہاں سے آپ قمیض کی لمبائی، سینہ، کمر اور شلوار کا ناپ آن لائن جمع کرا سکتے ہیں۔`,
+        text: `✂️ **3 Easy Ways to Provide Your Measurements:**\n\n1. **Visit Boutique Studio:** In-person measurement by female tailoring staff in our private fitting studio.\n2. **Send a Sample Suit:** Courier or send your best-fitting suit to our Sadiqabad shop, and Master Tariq will replicate the exact fit.\n3. **Online Visual Guide:** Use our step-by-step interactive guide on this website to input your shoulder, chest, waist, and length measurements online.`,
         action: { type: 'booking', label: 'Open Measurement Guide' },
       };
     }
@@ -241,12 +246,12 @@ export const BoutiqueAIChatbot: React.FC<BoutiqueAIChatbotProps> = ({
       q.includes('نمبر')
     ) {
       return {
-        text: `📦 **اپنے آرڈر کی لائیو ٹریکنگ:**\n\nجب آپ آرڈر بک کرواتے ہیں تو آپ کو ایک یونیک آرڈر ریفرنس نمبر دیا جاتا ہے (جیسے کہ BS-1001)۔\nآپ نیچے دیے گئے 'Track Order' بٹن پر کلک کر کے اپنا ریفرنس نمبر یا فون نمبر درج کر کے اپنے سوٹ کا موجودہ مرحلہ (کٹنگ، سلائی، فنشنگ یا ریڈی) لائیو دیکھ سکتے ہیں!`,
+        text: `📦 **Live Order Tracking:**\n\nWhen your booking is confirmed, you receive an Order Reference Number (e.g., BS-1001).\nClick the 'Lookup Order Now' button below or enter your contact phone number to view live real-time progress (Pattern Cutting, Stitching, Hand Embroidery, Quality Inspection, Ready for Pickup).`,
         action: { type: 'track', label: 'Lookup Order Now' },
       };
     }
 
-    // 6. Fabric / Kapra
+    // 6. Fabric / Cloth
     if (
       q.includes('fabric') ||
       q.includes('cloth') ||
@@ -260,14 +265,14 @@ export const BoutiqueAIChatbot: React.FC<BoutiqueAIChatbotProps> = ({
       q.includes('استر')
     ) {
       return {
-        text: `👗 **فیبرک اور میٹریل کی سہولیات:**\n\n- آپ اپنا ان سٹچڈ کپڑا خود لا سکتے ہیں، یا ہماری بوتیک سے فینسی برانڈڈ لان، شفون، اور سلک کے کپڑے منتخب کر سکتے ہیں۔\n- اندر لگنے والا استر (Astar) ہم بہترین کوالٹی کا بغیر کھجلی والا سوتی میٹریل لگاتے ہیں۔\n- لیسیں، پائپنگ، ٹسلز اور کٹ ورک کی وسیع ورائٹی ہمارے پاس موجود ہے۔`,
+        text: `👗 **Fabric & Premium Materials Policy:**\n\n- **Bring Your Own Cloth:** You can bring or courier your own unstitched designer lawn, chiffon, velvet, or silk.\n- **In-Boutique Selection:** We offer a curated collection of seasonal designer prints and imported trims.\n- **Lining & Quality:** We exclusively use skin-friendly, breathable pure cotton astar (lining) and German interlining canvas.`,
         action: { type: 'booking', label: 'Consult with Master Tailor' },
       };
     }
 
     // 7. General friendly answer
     return {
-      text: `جی بہت شکریہ! بوتیک سلائی سٹوڈیو صادق آباد میں ہم لیڈیز اور کڈز سلائی، برائیڈل لہنگا چولی، پاکستانی 3-پیس سوٹس اور 48 گھنٹے ایکسپریس کٹنگ کی مکمل سہولت فراہم کرتے ہیں۔\n\nآپ کسی بھی خاص ڈیزائن کی سلائی کے لیے آن لائن بکنگ کر سکتے ہیں یا ہم سے براہ راست واٹس ایپ پر رابطہ فرما سکتے ہیں!`,
+      text: `Hello and thank you for contacting Boutique Stitching Sadiqabad! We specialize in custom ladies and kids stitching, designer 3-piece suites, luxury bridal lehengas, and 48-hour express tailoring.\n\nHow can I help you today? You can ask about our stitching rates in PKR, book a consultation, or track an existing order!`,
       action: { type: 'booking', label: 'Book Custom Stitching' },
     };
   };
@@ -473,12 +478,15 @@ export const BoutiqueAIChatbot: React.FC<BoutiqueAIChatbotProps> = ({
               </div>
               <div>
                 <h3 className="text-sm font-bold flex items-center gap-1.5">
-                  <span>{formatText('Boutique AI Assistant', 'بوتیک اے آئی اسسٹنٹ', 'Boutique AI Assistant')}</span>
+                  <span>Boutique AI Assistant</span>
                   <span className="w-2 h-2 rounded-full bg-emerald-400 animate-pulse" />
                 </h3>
-                <p className="text-[11px] text-blue-100 flex items-center gap-1">
-                  <span>{formatText('Trained on Sadiqabad Atelier', 'صادق آباد بوتیک کے تمام معلومات پر تیار', '24/7 Live Support')}</span>
-                </p>
+                <div className="flex items-center gap-1.5 mt-0.5">
+                  <span className="px-1.5 py-0.5 bg-emerald-500/20 border border-emerald-400/40 text-[10px] font-bold text-emerald-200 rounded">
+                    English Chat Active
+                  </span>
+                  <span className="text-[10px] text-blue-100">· Sadiqabad Atelier</span>
+                </div>
               </div>
             </div>
 
@@ -649,11 +657,7 @@ export const BoutiqueAIChatbot: React.FC<BoutiqueAIChatbotProps> = ({
               type="text"
               value={inputText}
               onChange={(e) => setInputText(e.target.value)}
-              placeholder={formatText(
-                'Ask any question (rates, bridal, delivery, address)...',
-                'سلائی، ریٹس، برائیڈل یا پتہ کے بارے میں کوئی بھی سوال پوچھیں...',
-                'Koi bhi sawal poochhein (rates, delivery, address)...'
-              )}
+              placeholder="Ask anything in English (rates, bridal, delivery, address)..."
               className="flex-1 py-2.5 px-3.5 text-xs sm:text-sm bg-slate-100 hover:bg-slate-50 focus:bg-white border border-slate-200 rounded-xl focus:outline-hidden focus:ring-2 focus:ring-blue-500 text-slate-900 transition-all"
             />
 
